@@ -1,250 +1,159 @@
 # PMSM PID Speed Control Simulation
 
-<div align="center">
-
-![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)
-![NumPy](https://img.shields.io/badge/NumPy-1.20+-green.svg)
-![Matplotlib](https://img.shields.io/badge/Matplotlib-3.4+-orange.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-
-**A PID-based speed control simulation for Permanent Magnet Synchronous Motor (PMSM)**
-
-</div>
+> 永磁同步电机(PMSM) PID转速控制系统仿真
+>
+> English | [中文](#中文)
 
 ---
 
-## Table of Contents
+## English Version
 
-- [Overview](#overview)
-- [Features](#features)
-- [System Model](#system-model)
-- [PID Controller](#pid-controller)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Results](#results)
-- [Project Structure](#project-structure)
-- [References](#references)
+### Overview
 
----
+This project simulates a **Permanent Magnet Synchronous Motor (PMSM)** speed control system using a **PID controller** implemented in Python. The simulation demonstrates achieving 1500 RPM from 0 within 3 seconds.
 
-## Overview
+### Key Results
 
-This project simulates a **Permanent Magnet Synchronous Motor (PMSM)** speed control system using a **PID controller** implemented in Python. The simulation demonstrates how PID control achieves smooth, stable speed regulation from 0 to 1500 RPM within 3 seconds.
+| Metric | Target | Result |
+|--------|--------|--------|
+| Speed at 3s | 1500 RPM | ✅ 1500.00 RPM |
+| Overshoot | < 2% | ✅ 0.24% |
+| Stability (5-10s) | < 2 RPM variation | ✅ 0.00 RPM |
 
-### Key Objectives
+### Project Structure
 
-| Objective | Target | Result |
-|-----------|--------|--------|
-| Reach 1500 RPM | Within 3 seconds | ✅ 1500.0 RPM @ 3s |
-| Overshoot | < 2% | ✅ 0.09% |
-| Speed Variation (5-10s) | < 2 RPM | ✅ 0.00 RPM |
+```
+pid-pmsm/
+├── pmsm_pid_control.py          # Main simulation
+├── pmsm_pid_speed_control.png    # Results plot
+├── skill/                        # PID tuning skill
+│   ├── skill.md                  # Skill configuration
+│   ├── pid_tuning_core.py        # Core algorithm
+│   └── README.md                # Skill documentation
+└── README.md                     # This file
+```
 
----
+### Quick Start
 
-## Features
+```bash
+# Run simulation
+python pmsm_pid_control.py
 
-- **Complete PMSM Mathematical Model** - D-Q axis electrical dynamics + mechanical dynamics
-- **PID Controller with Anti-Windup** - Prevents integral windup for stable control
-- **Real-time Simulation** - Time-domain analysis of motor response
-- **Performance Metrics** - Automatic calculation of overshoot, settling time, and stability
-- **Visualization** - Speed response and voltage output plots
+# Output: pmsm_pid_speed_control.png
+```
 
----
+### PID Tuning Skill
 
-## System Model
+A reusable PID tuning tool for motor control:
 
-### PMSM Electrical Model
+```python
+from skill.pid_tuning_core import auto_tune
 
-The d-q axis current dynamics are described by:
+# Auto tune PID parameters
+result = auto_tune(J=0.1, B=0.05, Kt=0.5, Ra=1.0, target_rpm=1500)
+print(f"PID: Kp={result['Kp']:.2f}, Ki={result['Ki']:.2f}, Kd={result['Kd']:.2f}")
+```
 
+### Performance
+
+![Speed Control Response](pmsm_pid_speed_control.png)
+
+### System Model
+
+**Electrical:**
 ```
 dIq/dt = (Vq - Ra·Iq) / Lq
 ```
 
-### PMSM Mechanical Model
-
-The motor's mechanical dynamics follow:
-
+**Mechanical:**
 ```
-J·dω/dt + B·ω = Kt·Iq
+J·dω/dt = Kt·Iq - B·ω
 ```
 
-Where:
+### PID Parameters
 
-| Parameter | Symbol | Value | Unit |
-|-----------|--------|-------|------|
-| Stator Resistance | Ra | 1.0 | Ω |
-| Torque Constant | Kt | 0.5 | N·m/A |
-| Moment of Inertia | J | 0.1 | kg·m² |
-| Damping Coefficient | B | 0.05 | N·m·s/rad |
+| Parameter | Value |
+|-----------|-------|
+| Kp | 20.0 |
+| Ki | 80.0 |
+| Kd | 2.0 |
 
 ---
 
-## PID Controller
+## 中文
 
-### Control Law
+### 简介
 
-```
-Vq = Kp·e(t) + Ki·∫e(t)dt + Kd·de(t)/dt
-```
+本项目使用 **PID控制器** 对 **永磁同步电机(PMSM)** 进行转速控制仿真。演示了在3秒内从0加速到1500 RPM。
 
-### Tuned Parameters
+### 关键结果
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| Kp | 20.0 | Proportional gain |
-| Ki | 80.0 | Integral gain |
-| Kd | 2.0 | Derivative gain |
+| 指标 | 目标 | 结果 |
+|------|------|------|
+| 3秒转速 | 1500 RPM | ✅ 1500.00 RPM |
+| 超调量 | < 2% | ✅ 0.24% |
+| 稳定性(5-10秒) | < 2 RPM波动 | ✅ 0.00 RPM |
 
-### Anti-Windup
-
-Integral term is clamped to `[-20, 20]` to prevent windup phenomena.
-
----
-
-## Installation
-
-### Prerequisites
-
-- Python 3.7 or higher
-- NumPy
-- Matplotlib
-
-### Install Dependencies
-
-```bash
-pip install numpy matplotlib
-```
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/pid-pmsm.git
-cd pid-pmsm
-```
-
----
-
-## Usage
-
-### Run the Simulation
-
-```bash
-python pmsm_pid_control.py
-```
-
-### Output
-
-The program will:
-1. Simulate the PMSM speed control system
-2. Generate `pmsm_pid_speed_control.png` with response plots
-3. Display performance metrics in the console
-
-### Sample Output
-
-```
-Image saved: pmsm_pid_speed_control.png
-
-============================================================
-PMSM PID Speed Control Simulation Results
-============================================================
-Target Speed:           1500 RPM
-Speed at 3s:           1500.00 RPM
-Max Speed (0-10s):     1501.36 RPM
-Overshoot:             0.09%
-Final Speed (10s):     1500.00 RPM
-Speed Variation (5-10s): 0.00 RPM
-
-[OK] Speed at 3s (1500.0 RPM) is within 2% of target
-[OK] System is stable from 5-10s (variation: 0.00 RPM)
-============================================================
-```
-
----
-
-## Results
-
-### Speed Response
-
-![Speed Control Response](pmsm_pid_speed_control.png)
-
-The plot shows:
-- **Red dashed line**: Reference speed (1500 RPM)
-- **Blue solid line**: Actual motor speed
-- **Orange dashed vertical line**: 3-second mark
-- **Green horizontal band**: ±2% tolerance zone
-
-### Performance Analysis
-
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| Rise Time to 1500 RPM | < 3s | ✅ < 3s |
-| Overshoot | < 2% | ✅ 0.09% |
-| Steady-State Error | < 2% | ✅ 0% |
-| 5-10s Stability | < 2 RPM variation | ✅ 0 RPM |
-
----
-
-## Project Structure
+### 项目结构
 
 ```
 pid-pmsm/
-├── pmsm_pid_control.py      # Main simulation code
-├── pmsm_pid_speed_control.png  # Simulation results plot
-└── README.md                # This file
+├── pmsm_pid_control.py          # 主仿真程序
+├── pmsm_pid_speed_control.png    # 结果图表
+├── skill/                        # PID调参工具
+│   ├── skill.md                  # Skill配置
+│   ├── pid_tuning_core.py        # 核心算法
+│   └── README.md                # Skill文档
+└── README.md                     # 本文件
 ```
 
----
+### 快速开始
 
-## How It Works
+```bash
+# 运行仿真
+python pmsm_pid_control.py
 
-### Simulation Loop
-
-```
-1. Set reference speed = 1500 RPM
-2. For each time step:
-   ├── Calculate error = ω_ref - ω_actual
-   ├── Compute PID output: Vq = Kp·e + Ki·∫e·dt + Kd·de/dt
-   ├── Update q-axis current: Iq += (Vq/Ra - Iq)/τe · dt
-   ├── Update motor speed: ω += (Kt·Iq - B·ω)/J · dt
-   └── Record ω (RPM) and Vq
-3. Plot results and print metrics
+# 输出: pmsm_pid_speed_control.png
 ```
 
-### Block Diagram
+### PID调参Skill
 
+通用PID调参工具：
+
+```python
+from skill.pid_tuning_core import auto_tune
+
+# 自动调参
+result = auto_tune(J=0.1, B=0.05, Kt=0.5, Ra=1.0, target_rpm=1500)
+print(f"PID参数: Kp={result['Kp']:.2f}, Ki={result['Ki']:.2f}, Kd={result['Kd']:.2f}")
 ```
-        ┌─────────┐      ┌──────────┐      ┌─────────────┐
-Ref ──►│   PID   │─────►│ Electrical│─────►│ Mechanical  │─────► ω
-       │Control  │  Vq  │  Model    │  Iq  │   Model     │
-       └─────────┘      └───────────┘      └─────────────┘
-           ▲                                        │
-           │                                        │
-           └────────────── Feedback ────────────────┘
+
+### 性能图表
+
+![转速响应](pmsm_pid_speed_control.png)
+
+### 系统模型
+
+**电气方程：**
+```
+dIq/dt = (Vq - Ra·Iq) / Lq
 ```
 
----
+**机械方程：**
+```
+J·dω/dt = Kt·Iq - B·ω
+```
 
-## References
+### PID参数
 
-- [PMSM Control Theory](https://en.wikipedia.org/wiki/Synchronous_motor) - Wikipedia
-- [PID Controller](https://en.wikipedia.org/wiki/PID_controller) - Wikipedia
-- [Python Control Systems Library](https://python-control.readthedocs.io/) - python-control
+| 参数 | 数值 |
+|------|------|
+| Kp | 20.0 |
+| Ki | 80.0 |
+| Kd | 2.0 |
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Author
-
-Created with Claude Code
-
-<div align="center">
-
-*"Simulation is the key to understanding complex control systems"*
-
-</div>
+MIT License
